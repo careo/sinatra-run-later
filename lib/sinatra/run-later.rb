@@ -37,11 +37,14 @@ module Sinatra
       def initialize
         @thread = Thread.new {
 
-          # removing this seems to allow it shut down nicely
-          # trap :INT do
-          #  RunLater::Worker.shutdown
-          #  exit
-          # end
+          previous = trap :INT do
+            RunLater::Worker.shutdown
+            if previous == "DEFAULT"
+              exit
+            else
+              previous.call
+            end
+          end
 
           loop {
             process_queue
